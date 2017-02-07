@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Canvas Fundamentals</title>
+</head>
+
+<body>
+	<canvas id="myCanvas" width="1200" height="800" style="border: 1px solid #d3d3d3;">HTML Canvas is not supported in your browser</canvas>
+	<button onclick="pauseUnpause()">Pause</button>
+	<script src="presets.js"></script>
+
+	<script>
+		var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+		var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+
+		var canvas = document.getElementById("myCanvas");
+		
+		canvas.addEventListener("click", clickHandler, true);
+		var pause = true;
+
+		var ctx = canvas.getContext("2d");
+		var gameWidth = 48;
+		var gameHeight = 36;
+		var blockSize = 25;
+		
+		var lifeParticles = create2DArray(gameWidth, gameHeight);
+		//lifeParticles = presets.pentaDecathlon(10, 10);
+		
+		var gameCycle;
+		var drawCycle = requestAnimationFrame(draw);
+
+		pauseUnpause();
+
+		requestAnimationFrame(draw);
+
+		function update(){
+			var grid = JSON.parse(JSON.stringify(lifeParticles));
+			for (i = 1; i < gameWidth - 1; i++){
+				for (var j = 1; j < gameHeight - 1; j++) {
+					var count = 0;
+					if (grid[i-1][j-1]===true){
+						count++;
+					}
+					if (grid[i-1][j]===true){
+						count++;
+					}
+					if (grid[i-1][j+1]===true){
+						count++;
+					}
+
+					if (grid[i][j-1]===true){
+						count++;
+					}
+					if (grid[i][j+1]===true){
+						count++;
+					}
+
+					if (grid[i+1][j-1]===true){
+						count++;
+					}
+					if (grid[i+1][j]===true){
+						count++;
+					}
+					if (grid[i+1][j+1]===true){
+						count++;
+					}
+
+					if (grid[i][j]===true){
+						if (count<2){
+							lifeParticles[i][j]=false;
+						}
+						if (count>3){
+							lifeParticles[i][j]=false;
+						}
+					}
+					else{
+						if (count==3){
+							lifeParticles[i][j]=true;
+						}
+					}
+				}
+			}
+		}
+
+		function draw(){
+			var count=0;
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.beginPath();
+			for(i=0; i<gameWidth; i++){
+				for(j=0; j<gameHeight; j++){
+					if (lifeParticles[i][j]===true){
+						count++;
+						ctx.rect(i*blockSize+1, j*blockSize+1, blockSize-1, blockSize-1);
+					}
+				}
+			}
+			ctx.fill();
+
+
+			requestAnimationFrame(draw);
+		}
+
+		function create2DArray(width, height){
+			var arr = [];
+
+			for (i=0; i<width; i++){
+				arr.push(new Array());
+				for(j=0; j<height; j++){
+					arr[i][j] = false;
+				}
+			}
+
+			return arr;
+		}
+
+		function clickHandler(event){
+			var x = Math.floor(event.clientX/blockSize);
+			var y = Math.floor(event.clientY/blockSize);
+			console.log(event.clientX+', '+event.clientY);
+			lifeParticles[x][y] = !lifeParticles[x][y];
+		}
+
+		function pauseUnpause(){
+			pause = !pause;
+			if (!pause){
+				gameCycle = window.setInterval(update, 200);
+			}
+			else {
+				window.clearInterval(gameCycle);
+			}
+		}
+	</script>
+</body>
